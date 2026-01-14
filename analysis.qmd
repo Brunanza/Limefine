@@ -96,6 +96,7 @@ boxplot_fines <- function(substances){
 # Function to create boxplot legend
 create_boxplot_legend <- function(){
   # Create sample data for a simple boxplot
+  set.seed(42)  # Set seed for reproducibility
   df_legend <- data.frame(x = rep("", 50), y = c(rnorm(40, 50, 10), rnorm(10, 80, 5)))
   
   # Calculate quartiles for annotation
