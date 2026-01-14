@@ -1,0 +1,56 @@
+---
+title: "Sanders Limestone Fine Sampling Analysis"
+author: "Limefine Project"
+format: html
+editor: visual
+---
+
+## Introduction
+
+This document contains the analysis for the Sanders limestone fine sampling campaign.
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# Load required libraries
+# library(tidyverse)
+# library(ggplot2)
+```
+
+## Data Loading
+
+```{r load-data}
+# Load data from input folder
+# data <- read.csv("input/your_data.csv")
+```
+
+## Data Exploration
+
+```{r explore}
+# Summary statistics
+# summary(data)
+```
+
+## Analysis
+
+```{r analysis}
+# Perform analysis here
+```
+
+## Results
+
+```{r results}
+# Display results
+```
+
+## Conclusions
+
+Add your conclusions here.
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```
