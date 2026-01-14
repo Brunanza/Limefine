@@ -93,6 +93,55 @@ boxplot_fines <- function(substances){
     geom_jitter(size = 0.1, alpha = 0.5)
 }
 
+# Function to create boxplot legend
+create_boxplot_legend <- function(){
+  # Create sample data for a simple boxplot
+  df_legend <- data.frame(x = rep("", 50), y = c(rnorm(40, 50, 10), rnorm(10, 80, 5)))
+  
+  # Calculate quartiles for annotation
+  q1 <- quantile(df_legend$y, 0.25)
+  q2 <- quantile(df_legend$y, 0.5)  # median
+  q3 <- quantile(df_legend$y, 0.75)
+  iqr <- q3 - q1
+  lower_whisker <- max(min(df_legend$y), q1 - 1.5 * iqr)
+  upper_whisker <- min(max(df_legend$y), q3 + 1.5 * iqr)
+  
+  # Create the legend plot
+  ggplot(df_legend, aes(x = x, y = y)) +
+    geom_boxplot(outlier.shape = NA, size = 0.3) +
+    
+    # Add annotations
+    annotate("text", x = 1.35, y = q2, label = "Median (Q50)", hjust = 0, size = 3) +
+    annotate("segment", x = 1.15, xend = 1.33, y = q2, yend = q2, 
+             arrow = arrow(length = unit(0.15, "cm")), size = 0.3) +
+    
+    annotate("text", x = 1.35, y = q3, label = "Q75 (75th percentile)", hjust = 0, size = 3) +
+    annotate("segment", x = 1.15, xend = 1.33, y = q3, yend = q3, 
+             arrow = arrow(length = unit(0.15, "cm")), size = 0.3) +
+    
+    annotate("text", x = 1.35, y = q1, label = "Q25 (25th percentile)", hjust = 0, size = 3) +
+    annotate("segment", x = 1.15, xend = 1.33, y = q1, yend = q1, 
+             arrow = arrow(length = unit(0.15, "cm")), size = 0.3) +
+    
+    annotate("text", x = 1.35, y = upper_whisker, label = "Upper whisker", hjust = 0, size = 3) +
+    annotate("segment", x = 1.15, xend = 1.33, y = upper_whisker, yend = upper_whisker, 
+             arrow = arrow(length = unit(0.15, "cm")), size = 0.3) +
+    
+    annotate("text", x = 1.35, y = lower_whisker, label = "Lower whisker", hjust = 0, size = 3) +
+    annotate("segment", x = 1.15, xend = 1.33, y = lower_whisker, yend = lower_whisker, 
+             arrow = arrow(length = unit(0.15, "cm")), size = 0.3) +
+    
+    labs(title = "Boxplot Legend", x = "", y = "") +
+    theme_bw() +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          panel.grid = element_blank(),
+          plot.title = element_text(hjust = 0.5, size = 10)) +
+    xlim(0.5, 2.8)
+}
+
 
 a <- boxplot_fines(subs_low)
 
@@ -100,17 +149,19 @@ b <- boxplot_fines(subs_medium)
    
 c <- boxplot_fines(subs_high)
 
+# Create the legend
+legend_plot <- create_boxplot_legend()
   
   
 
-(a + b + c) + plot_layout(nrow = 1, guides = "collect",axes = "collect")
+(a + b + c + legend_plot) + plot_layout(nrow = 1, guides = "collect",axes = "collect", widths = c(1, 1, 1, 0.8))
   #apply theme_bw to all plots
   
 
 
 #sace to file (png, width=12in, height=6in, res=300)
 
-ggsave("output/boxplot_xrf_fines.png", width = 12, height = 6, dpi = 300, scale=0.6)
+ggsave("output/boxplot_xrf_fines.png", width = 14, height = 6, dpi = 300, scale=0.6)
   
 
 
