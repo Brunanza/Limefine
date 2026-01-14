@@ -11,26 +11,131 @@ This document contains the analysis for the Sanders limestone fine sampling camp
 
 ## Setup
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```{r setupinclude=FALSE}
+knitr::opts_chunk$set(echo = TRUEwarning = FALSEmessage = FALSE)
 
 # Load required libraries
-# library(tidyverse)
-# library(ggplot2)
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(patchwork)
 ```
 
 ## Data Loading
 
+### Fines data
+
 ```{r load-data}
 # Load data from input folder
-# data <- read.csv("input/your_data.csv")
+
+dt_fines <- read_excel("input/Fines_Sample_data.xlsx"
+    sheet = "XRF"skip = 1)
+
 ```
 
 ## Data Exploration
 
 ```{r explore}
 # Summary statistics
-# summary(data)
+summary(dt_fines)
+
+
+
+names(dt_fines) <- c("Mineralresource", "Deposit", "Samplenumber", "LOI950°C", "SiO2", "TiO2", "Al2O3",
+"Fe2O3", "MnO", "MgO", "CaO", "Na2O", "K2O", "P2O5",
+"SO3")
+
+
+```
+
+## Plots
+
+### Boxplot of XRF results fines (regular y-axis)
+
+```{r boxplot-xrf-prep}
+
+# format data for plotting
+# pivot longer, excluding non-numeric columns
+
+#exclude LOI950°C 
+dt_fines_long <- dt_fines %>%  select(-c("LOI950°C"))
+
+dt_fines_long <- dt_fines_long %>%
+  pivot_longer(cols = c("SiO2", "TiO2", "Al2O3",
+"Fe2O3", "MnO", "MgO", "CaO", "Na2O", "K2O", "P2O5",
+"SO3"),
+               names_to = "Substance",
+               values_to = "Concentration")
+
+# create boxplot, sort x-axis by median concentration
+#plot  MgO, SiO2, CaO separately due to scale issues
+#start with these
+
+subs_high <- c("MgO",  "SiO2",  "CaO")
+subs_medium <- c("Al2O3", "Fe2O3", "K2O")
+subs_low <- c("TiO2", "MnO", "P2O5", "Na2O", "SO3")
+
+#refactor the three plots below into a function
+
+
+```
+
+```{r boxplot-xrf}
+
+
+boxplot_fines <- function(substances){
+  ggplot(dt_fines_long %>% filter(Substance %in% substances),
+         aes(x = reorder(Substance, Concentration, FUN = median), y = Concentration)) +
+    geom_boxplot(outliers = F, size=0.3) +
+    labs(x = "Substance",
+         y = "Concentration (%)") +
+    theme_bw()+
+    geom_jitter(size = 0.1, alpha = 0.5)
+}
+
+
+a <- boxplot_fines(subs_low)
+
+b <- boxplot_fines(subs_medium)
+   
+c <- boxplot_fines(subs_high)
+
+  
+  
+
+(a + b + c) + plot_layout(nrow = 1, guides = "collect",axes = "collect")
+  #apply theme_bw to all plots
+  
+
+
+#sace to file (png, width=12in, height=6in, res=300)
+
+ggsave("output/boxplot_xrf_fines.png", width = 12, height = 6, dpi = 300, scale=0.6)
+  
+
+
+
+
+```
+
+### Boxplot of XRF results fines (log y-axis)
+
+```{r boxplot-xrf-log}
+
+# create boxplot with log y-axis, sort x-axis by median concentration
+a_log <- ggplot(dt_fines_long,
+       aes(x = reorder(Substance, Concentration, FUN = median), y = Concentration
+)) +
+  geom_boxplot(color = "darkred") +
+  labs(x = "Substance",
+       y = "Concentration (%)") +
+  theme_minimal()+
+  geom_jitter(width = 0.2, alpha = 0.5) +
+  scale_y_log10()
+
+
+
+
 ```
 
 ## Analysis
