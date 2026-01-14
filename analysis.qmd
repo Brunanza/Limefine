@@ -132,30 +132,10 @@ a_log <- ggplot(dt_fines_long,
   theme_minimal()+
   geom_jitter(width = 0.2, alpha = 0.5) +
   scale_y_log10()
-
+a_log
 
 
 
 ```
 
-## Analysis
 
-```{r analysis}
-# Perform analysis here
-```
-
-## Results
-
-```{r results}
-# Display results
-```
-
-## Conclusions
-
-Add your conclusions here.
-
-## Session Info
-
-```{r session-info}
-sessionInfo()
-```
