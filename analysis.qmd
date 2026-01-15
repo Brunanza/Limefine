@@ -86,11 +86,12 @@ subs_low <- c("TiO2", "MnO", "P2O5", "Na2O", "SO3")
 boxplot_fines <- function(substances){
   ggplot(dt_fines_long %>% filter(Substance %in% substances),
          aes(x = reorder(Substance, Concentration, FUN = median), y = Concentration)) +
-    geom_boxplot(outliers = F, size=0.3) +
+    geom_boxplot(outliers = F,
+                 size=0.3) +
     labs(x = "Substance",
          y = "Concentration (%)") +
-    theme_bw()+
-    geom_jitter(size = 0.1, alpha = 0.5)
+    theme_bw()
+  #  geom_jitter(size = 0.1, alpha = 0.5)
 }
 
 
@@ -110,7 +111,7 @@ c <- boxplot_fines(subs_high)
 
 #sace to file (png, width=12in, height=6in, res=300)
 
-#ggsave("output/boxplot_xrf_fines.png", width = 12, height = 6, dpi = 300, scale=0.6)
+ggsave("output/boxplot_xrf_fines.png", width = 12, height = 6, dpi = 300, scale=0.6)
   
 
 
