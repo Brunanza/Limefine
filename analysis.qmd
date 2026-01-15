@@ -82,23 +82,22 @@ subs_low <- c("TiO2", "MnO", "P2O5", "Na2O", "SO3")
 
 ```{r boxplot-xrf}
 
+# Create a named vector for chemical formula labels with subscripts
+chem_labels <- c(
+  "SiO2" = expression(SiO[2]),
+  "TiO2" = expression(TiO[2]),
+  "Al2O3" = expression(Al[2]*O[3]),
+  "Fe2O3" = expression(Fe[2]*O[3]),
+  "MnO" = expression(MnO),
+  "MgO" = expression(MgO),
+  "CaO" = expression(CaO),
+  "Na2O" = expression(Na[2]*O),
+  "K2O" = expression(K[2]*O),
+  "P2O5" = expression(P[2]*O[5]),
+  "SO3" = expression(SO[3])
+)
 
 boxplot_fines <- function(substances){
-  # Create a named vector for chemical formula labels with subscripts
-  chem_labels <- c(
-    "SiO2" = expression(SiO[2]),
-    "TiO2" = expression(TiO[2]),
-    "Al2O3" = expression(Al[2]*O[3]),
-    "Fe2O3" = expression(Fe[2]*O[3]),
-    "MnO" = expression(MnO),
-    "MgO" = expression(MgO),
-    "CaO" = expression(CaO),
-    "Na2O" = expression(Na[2]*O),
-    "K2O" = expression(K[2]*O),
-    "P2O5" = expression(P[2]*O[5]),
-    "SO3" = expression(SO[3])
-  )
-  
   ggplot(dt_fines_long %>% filter(Substance %in% substances),
          aes(x = reorder(Substance, Concentration, FUN = median), y = Concentration)) +
     geom_boxplot(outliers = F,
@@ -140,21 +139,6 @@ ggsave("output/boxplot_xrf_fines.png", width = 12, height = 6, dpi = 300, scale=
 ```{r boxplot-xrf-log}
 
 # create boxplot with log y-axis, sort x-axis by median concentration
-# Create a named vector for chemical formula labels with subscripts
-chem_labels <- c(
-  "SiO2" = expression(SiO[2]),
-  "TiO2" = expression(TiO[2]),
-  "Al2O3" = expression(Al[2]*O[3]),
-  "Fe2O3" = expression(Fe[2]*O[3]),
-  "MnO" = expression(MnO),
-  "MgO" = expression(MgO),
-  "CaO" = expression(CaO),
-  "Na2O" = expression(Na[2]*O),
-  "K2O" = expression(K[2]*O),
-  "P2O5" = expression(P[2]*O[5]),
-  "SO3" = expression(SO[3])
-)
-
 a_log <- ggplot(dt_fines_long,
        aes(x = reorder(Substance, Concentration, FUN = median), y = Concentration
 )) +
