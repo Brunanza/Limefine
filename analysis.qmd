@@ -20,6 +20,7 @@ library(ggplot2)
 library(readxl)
 library(patchwork)
 library(corrplot)
+library(Hmisc)
 ```
 
 ## Data Loading
@@ -169,8 +170,9 @@ constituents <- dt_fines %>%
 # Calculate Spearman correlation matrix
 cor_matrix <- cor(constituents, method = "spearman", use = "complete.obs")
 
-# Calculate p-values for significance testing
-cor_pvalues <- cor.mtest(constituents, method = "spearman")
+# Calculate p-values for Spearman correlation using Hmisc
+cor_result <- rcorr(as.matrix(constituents), type = "spearman")
+p_matrix <- cor_result$P
 
 # Create correlation plot
 corrplot(cor_matrix, 
@@ -179,10 +181,11 @@ corrplot(cor_matrix,
          col = COL2('RdBu', 200),    # Standard blue to red color scheme
          tl.col = "black",           # Text label color: black
          addCoef.col = "black",      # Coefficient text color: black
-         p.mat = cor_pvalues$p,      # P-value matrix for significance
+         p.mat = p_matrix,           # P-value matrix for significance
          sig.level = 0.05,           # Alpha = 0.05
-         insig = "label_sig",        # Mark significant values with *
+         insig = "pch",              # Add * marker for significant correlations
          pch.cex = 0.9,              # Size of significance markers
+         pch.col = "black",          # Color of significance markers
          number.cex = 0.7,           # Size of correlation coefficients
          tl.cex = 0.8)               # Size of text labels
 
