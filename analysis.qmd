@@ -183,7 +183,7 @@ corrplot(cor_matrix,
          addCoef.col = "black",      # Coefficient text color: black
          p.mat = p_matrix,           # P-value matrix for significance
          sig.level = 0.05,           # Alpha = 0.05
-         insig = "pch",              # Add * marker for significant correlations
+         insig = "label_sig",        # Add significance labels (* for p < 0.05)
          pch.cex = 0.9,              # Size of significance markers
          pch.col = "black",          # Color of significance markers
          number.cex = 0.7,           # Size of correlation coefficients
