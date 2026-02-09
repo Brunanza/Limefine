@@ -11,8 +11,8 @@ This document contains the analysis for the Sanders limestone fine sampling camp
 
 ## Setup
 
-```{r setupinclude=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning = FALSE, message = FALSE)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 # Load required libraries
 library(tidyverse)
@@ -41,7 +41,7 @@ summary(dt_fines)
 
 
 
-names(dt_fines) <- c("Mineralresource", "Deposit", "Samplenumber", "LOI950°C", "SiO2", "TiO2", "Al2O3",
+names(dt_fines) <- c("Mineralresource", "Deposit", "Samplenumber", "LOI950C", "SiO2", "TiO2", "Al2O3",
 "Fe2O3", "MnO", "MgO", "CaO", "Na2O", "K2O", "P2O5",
 "SO3")
 
@@ -58,7 +58,7 @@ names(dt_fines) <- c("Mineralresource", "Deposit", "Samplenumber", "LOI950°C", 
 # pivot longer, excluding non-numeric columns
 
 #exclude LOI950°C 
-dt_fines_long <- dt_fines %>%  select(-c("LOI950°C"))
+dt_fines_long <- dt_fines %>%  select(-c("LOI950C"))
 
 dt_fines_long <- dt_fines_long %>%
   pivot_longer(cols = c("SiO2", "TiO2", "Al2O3",
@@ -116,18 +116,18 @@ b <- boxplot_fines(subs_medium)
    
 c <- boxplot_fines(subs_high)
 
-  
-  
 
-(a + b + c) + plot_layout(nrow = 1, guides = "collect",axes = "collect")
+# combine plots into a single patchwork object
+p <- (a + b + c) + plot_layout(nrow = 1, guides = "collect", axes = "collect")
+
+p_combined <- (a + b + c) + plot_layout(nrow = 1, guides = "collect", axes = "collect")
+p_combined  # display combined plot in the document
   #apply theme_bw to all plots
-  
 
 
-#sace to file (png, width=12in, height=6in, res=300)
+#save to file (png, width=12in, height=6in, res=300)
 
-ggsave("output/boxplot_xrf_fines.png", width = 12, height = 6, dpi = 300, scale=0.6)
-  
+ggsave("output/boxplot_xrf_fines.png", plot = p_combined, width = 12, height = 6, dpi = 300, scale = 0.6)
 
 
 
@@ -154,7 +154,6 @@ a_log
 
 
 ```
-
 
 ## plot correlations between certain constituents
 
