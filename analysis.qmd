@@ -15,6 +15,14 @@ This document contains the analysis for the Sanders limestone fine sampling camp
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 # Load required libraries
+# Install packages if needed
+required_packages <- c("tidyverse", "ggplot2", "readxl", "patchwork", "corrplot", "Hmisc")
+missing_packages <- required_packages[!required_packages %in% installed.packages()[,"Package"]]
+if(length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+# Load required libraries
 library(tidyverse)
 library(ggplot2)
 library(readxl)
@@ -163,30 +171,190 @@ a_log
 # Correlation plots between constituents
 
 # Select only the constituent columns (excluding metadata columns)
-constituents <- dt_fines %>%
-  select(SiO2, TiO2, Al2O3, Fe2O3, MnO, MgO, CaO, Na2O, K2O, P2O5, SO3)
+constituents <- dt_fines |> 
+  select(SiO2, TiO2, Al2O3, Fe2O3, MnO, MgO, CaO, Na2O, K2O, P2O5, SO3) |> 
+  drop_na()  # Remove rows with any missing values
 
 # Calculate Spearman correlation matrix
 cor_matrix <- cor(constituents, method = "spearman", use = "complete.obs")
 
 # Calculate p-values for Spearman correlation using Hmisc
-cor_result <- rcorr(as.matrix(constituents), type = "spearman")
-p_matrix <- cor_result$P
+cor_result <- cor.mtest(as.matrix(constituents), type = "spearman")
+p_matrix <- cor_result$p
 
 # Create correlation plot
 corrplot(cor_matrix, 
-         method = "color",           # Fill tiles with colors
-         type = "full",              # Show both upper and lower triangle
-         col = COL2('RdBu', 200),    # Standard blue to red color scheme
+         method = "color", # Fill tiles with colors
+         diag= F,        # Hide diagonal (self-correlations)
+         type = "upper",              # Show both upper and lower triangle
+         col = COL2('RdBu', 9),    # Standard blue to red color scheme
          tl.col = "black",           # Text label color: black
          addCoef.col = "black",      # Coefficient text color: black
-         addCoef = TRUE,             # Display correlation coefficients
          p.mat = p_matrix,           # P-value matrix for significance
-         sig.level = 0.05,           # Alpha = 0.05
+         sig.level = 0.55,           # Alpha = 0.05
          insig = "label_sig",        # Add significance labels (* for p < 0.05)
          pch.cex = 0.9,              # Size of significance markers
          pch.col = "black",          # Color of significance markers
-         number.cex = 0.7,           # Size of correlation coefficients
-         tl.cex = 0.8)               # Size of text labels
+         number.cex = 1,             # Size of correlation coefficients
+         tl.cex = 1.5,               # Size of text labels
+         addCoefasPercent = FALSE  # Show coefficients as decimals, not percentages
+         )               
+
+
+#save to file (png, width=8in, height=8in, res=300)
+
+ggsave("output/correlation_plot_fines.png", width = 8, height = 8, dpi = 300)
+
+```
+
+
+## add terniary diagrams 
+
+in the followwing plot, the terniary diagram for CaO, MgO, P2O5 is shown; point color: deposit.
+
+```{r ternary-diagram}
+# Load Ternary package for ternary plots
+if(!require(Ternary)) {
+  install.packages("Ternary")
+}
+library(Ternary)
+
+# Prepare data for ternary plot
+# Ternary package requires a matrix with 3 columns
+ternary_data <- dt_fines |> 
+  select(CaO, MgO, P2O5, Deposit) |> 
+  drop_na()
+
+# Normalize data to specified limits: CaO max=100, MgO max=50, P2O5 max=10
+# Convert to proportions that sum to 1
+ternary_data_normalized <- ternary_data |>
+  mutate(
+    CaO_norm = CaO / 100,
+    MgO_norm = MgO / 50,
+    P2O5_norm = P2O5 / 10,
+    total = CaO_norm + MgO_norm + P2O5_norm,
+    CaO_tern = CaO_norm / total * 100,
+    MgO_tern = MgO_norm / total * 100,
+    P2O5_tern = P2O5_norm / total * 100
+  )
+
+# Create ternary plot
+TernaryPlot(
+  atip = "CaO (max=100%)",
+  btip = "MgO (max=50%)",
+  ctip = expression(paste(P[2]*O[5], " (max=10%)")),
+  axis.labels = seq(0, 100, by = 10),
+  grid.minor.lines = 0
+)
+
+# Add points colored by deposit
+deposits <- unique(ternary_data_normalized$Deposit)
+colors <- scales::hue_pal()(length(deposits))
+
+for(i in seq_along(deposits)) {
+  deposit_subset <- ternary_data_normalized |> filter(Deposit == deposits[i])
+  TernaryPoints(
+    deposit_subset[, c("CaO_tern", "MgO_tern", "P2O5_tern")],
+    col = colors[i],
+    pch = 16,
+    cex = 1.2
+  )
+}
+
+# Add legend
+legend(
+  "topright",
+  legend = deposits,
+  col = colors,
+  pch = 16,
+  bty = "n",
+  title = "Deposit"
+)
+
+  
+
+```
+
+
+
+```{r}
+# Install package plotly for interactive ternary plots
+if(!require(plotly)) {
+  install.packages("plotly")
+}
+library(plotly)
+
+# Prepare ternary data (already defined earlier in the document)
+ternary_data <- dt_fines |> 
+  select(CaO, MgO, P2O5, Deposit) |> 
+  drop_na()
+
+# Normalize data to sum to 100 for ternary plot
+# Each component is scaled by its maximum value, then normalized
+ternary_data_normalized <- ternary_data |>
+  mutate(
+    CaO_scaled = CaO ,
+    MgO_scaled = MgO / 30 * 100,  # Scale MgO to a max of 30
+    P2O5_scaled = P2O5 / 5 * 100, # Scale P2O5 to a max of 10
+
+    # Add formatted tooltip text
+    tooltip_text = paste0(
+      "Deposit: ", Deposit, "<br>",
+      "CaO: ", round(CaO, 2), "%<br>",
+      "CaO_scaled: ", round(CaO_scaled, 2), "%<br>",
+      "MgO: ", round(MgO, 2), "%<br>",
+      "MgO_scaled: ", round(MgO_scaled, 2), "%<br>",
+      "P₂O₅: ", round(P2O5, 2), "%",
+      "P₂O₅_scaled: ", round(P2O5_scaled, 2), "%"
+    )
+  )
+
+
+# Create interactive ternary plot with custom axis ranges
+fig <- ternary_data_normalized |> 
+  plot_ly(
+    type = 'scatterternary',
+    mode = 'markers',
+    a = ~CaO_scaled,
+    b = ~MgO_scaled,
+    c = ~P2O5_scaled,
+    text = ~tooltip_text,
+    hoverinfo = 'text',
+    color = ~Deposit,
+    colors = scales::hue_pal()(length(unique(ternary_data_normalized$Deposit))),
+    marker = list(
+      size = 10,
+      line = list(width = 1)
+    )
+  ) |>
+  layout(
+    ternary = list(
+      sum = 100,
+      aaxis = list(
+        title = 'CaO (%)',
+        titlefont = list(size = 20),
+        tickfont = list(size = 15),
+        tickvals = seq(0, 100, 10),
+        ticktext = seq(0, 100, 10)
+      ),
+      baxis = list(
+        title = 'MgO (%)',
+        titlefont = list(size = 20),
+        tickfont = list(size = 15),
+        tickvals = seq(0, 100, 10),
+        ticktext = seq(0, 30, 3)
+      ),
+      caxis = list(
+        title = 'P<sub>2</sub>O<sub>5</sub> (%)',
+        titlefont = list(size = 20),
+        tickfont = list(size = 15),
+        tickvals = seq(0, 100, 10),
+        ticktext = seq(0, 5, 0.5)
+      )
+    ),
+    margin = list(l = 80, r = 80, t = 80, b = 80)
+  )
+
+fig
 
 ```
